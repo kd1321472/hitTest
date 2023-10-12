@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ヒットアンドブロー</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        label {
+            font-size: 18px;
+        }
+
+        input[type="text"] {
+            font-size: 18px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #history {
+            text-align: left;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <h1>ヒットアンドブロー</h1>
+    <p>1から9までの異なる数字の組み合わせを当ててください。</p>
+    
+    <label for="player-guess">あなたの番です。数字を入力してください:</label>
+    <input type="text" id="player-guess">
+    <button onclick="playerTurn()">チェック</button>
+
+    <div id="player-message"></div>
+    <div id="cpu-message"></div>
+    <div id="history">
+        <h2>履歴</h2>
+    </div>
+
+    <script>
+        // ランダムな3桁の数字を生成する関数
+        function generateRandomNumber() {
+            const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            let randomNum = '';
+            for (let i = 0; i < 3; i++) {
+                const randomIndex = Math.floor(Math.random() * numbers.length);
+                randomNum += numbers[randomIndex];
+                numbers.splice(randomIndex, 1);
+            }
+            return randomNum;
+        }
+
+        // 正解の数字
+        const targetNumber = generateRandomNumber();
+        console.log(targetNumber); // デバッグ用
+
+        // プレイヤーとCPUの試行回数
+        let playerAttempts = 0;
+        let cpuAttempts = 0;
+
+        // プレイヤーとCPUの回答履歴
+        const playerHistory = [];
+        const cpuHistory = [];
+
+        // プレイヤーのターン
+        function playerTurn() {
+            const playerGuess = document.getElementById('player-guess').value;
+            if (playerGuess.length !== 3 || !/^[1-9]{3}$/.test(playerGuess)) {
+                document.getElementById('player-message').textContent = '3桁の異なる数字を入力してください。';
+                return;
+            }
+
+            let playerHits = 0;
+            let playerBlows = 0;
+
+            for (let i = 0; i < 3; i++) {
+                if (playerGuess[i] === targetNumber[i]) {
+                    playerHits++;
+                } else if (targetNumber.includes(playerGuess[i])) {
+                    playerBlows++;
+                }
+            }
+
+            playerAttempts++;
+
+            playerHistory.push(`${playerAttempts}. プレイヤー: ${playerGuess} - ヒット: ${playerHits}, ブロー: ${playerBlows}`);
+            updateHistory();
+
+            if (playerHits === 3) {
+                document.getElementById('player-message').textContent = `おめでとうございます！${playerAttempts}回目で正解しました！`;
+            } else {
+                document.getElementById('player-message').textContent = `ヒット: ${playerHits}, ブロー: ${playerBlows}`;
+                document.getElementById('cpu-message').textContent = "CPUの番です。";
+                setTimeout(cpuTurn, 1000); // CPUのターンを遅らせて実行
+            }
+        }
+
+        // CPUのターン
+        function cpuTurn() {
+            const cpuGuess = generateRandomNumber();
+
+            let cpuHits = 0;
+            let cpuBlows = 0;
+
+            for (let i = 0; i < 3; i++) {
+                if (cpuGuess[i] === targetNumber[i]) {
+                    cpuHits++;
+                } else if (targetNumber.includes(cpuGuess[i])) {
+                    cpuBlows++;
+                }
+            }
+
+            cpuAttempts++;
+
+            cpuHistory.push(`${cpuAttempts}. CPU: ${cpuGuess} - ヒット: ${cpuHits}, ブロー: ${cpuBlows}`);
+            updateHistory();
+
+            if (cpuHits === 3) {
+                document.getElementById('cpu-message').textContent = `CPUが${cpuAttempts}回目で正解しました。`;
+            } else {
+                document.getElementById('cpu-message').textContent = `ヒット: ${cpuHits}, ブロー: ${cpuBlows}`;
+                document.getElementById('player-message').textContent = "あなたの番です。";
+            }
+        }
+
+        // 履歴を更新する関数
+        function updateHistory() {
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = "<h2>履歴</h2>";
+
+            for (let i = 0; i < playerHistory.length; i++) {
+                const p = document.createElement('p');
+                p.textContent = playerHistory[i];
+                historyDiv.appendChild(p);
+            }
+
+            for (let i = 0; i < cpuHistory.length; i++) {
+                const p = document.createElement('p');
+                p.textContent = cpuHistory[i];
+                historyDiv.appendChild(p);
+            }
+        }
+    </script>
+</body>
+</html>
